@@ -267,8 +267,8 @@ spark-operator:
   fullnameOverride: spark-operator
   webhook:
     enable: true
-  serviceAccounts:
-    spark:
+  controller:
+    serviceAccount:
       name: "sparkapp"
   spark:
     jobNamespaces:
