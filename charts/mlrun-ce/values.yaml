@@ -269,13 +269,12 @@ spark-operator:
     enable: true
   controller:
     serviceAccount:
-      name: sparkapp
+      name: spark-operator-controller
   spark:
     jobNamespaces:
       - mlrun
     serviceAccount:
       name: sparkapp
-      create: false
 
 pipelines:
   enabled: true
