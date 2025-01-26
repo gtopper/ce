@@ -174,14 +174,14 @@ jupyterNotebook:
     port: 8888
   ingress:
     enabled: false
-    annotations: { }
+    annotations: {}
 
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: [ ]
-    tls: [ ]
+        paths: []
+    tls: []
 
     #  - secretName: chart-example-tls
     #    hosts:
@@ -199,7 +199,7 @@ jupyterNotebook:
   # use this to override mlrunUIURL, by default it will be auto-resolved to externalHostAddress and
   # mlrun UI's node port
   mlrunUIURL:
-  extraEnvKeyValue: { }
+  extraEnvKeyValue: {}
   envFrom:
     - configMapRef:
         name: jupyter-common-env
@@ -214,13 +214,13 @@ jupyterNotebook:
       helm.sh/resource-policy: "keep"
 
   nodeSelector:
-    { }
+    {}
     # node-role.kubernetes.io/node: "true"
-  # tier: cs
+    # tier: cs
   tolerations:
-    [ ]
+    []
     #  - key: "node-role.kubernetes.io/master"
-  #    effect: NoSchedule
+    #    effect: NoSchedule
 
 mpi-operator:
   fullnameOverride: mpi-operator
@@ -296,13 +296,13 @@ pipelines:
     annotations:
       helm.sh/resource-policy: "keep"
   nodeSelector:
-    { }
+    {}
     # node-role.kubernetes.io/node: "true"
-  # tier: cs
+    # tier: cs
   tolerations:
-    [ ]
+    []
     #  - key: "node-role.kubernetes.io/master"
-  #    effect: NoSchedule
+    #    effect: NoSchedule
   db:
     username: root
     securityContext:
