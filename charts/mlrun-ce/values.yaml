@@ -267,9 +267,6 @@ spark-operator:
   fullnameOverride: spark-operator
   webhook:
     enable: true
-  controller:
-    serviceAccount:
-      name: spark-operator-controller
   spark:
     jobNamespaces:
       - mlrun
