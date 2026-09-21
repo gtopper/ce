@@ -27,3 +27,34 @@ validate-cuda:
 
 .PHONY: validate-all
 validate-all: validate validate-cuda
+
+# Spark 4 variables and targets.
+REGISTRY ?= gcr.io/iguazio
+MLRUN_CE_SPARK4_IMAGE_TAG ?= $(REGISTRY)/spark-app:4.2.0-scala2.13-java25-ubuntu-1
+MLRUN_CE_SPARK4_CUDA_IMAGE_TAG ?= $(REGISTRY)/spark-app-cuda:4.2.0-scala2.13-java25-ubuntu-1
+
+.PHONY: build-spark4
+build-spark4:
+	docker build --platform="$(MLRUN_CE_IMAGE_PLATFORM)" -t "$(MLRUN_CE_SPARK4_IMAGE_TAG)" -f Dockerfile.spark4 .
+
+.PHONY: build-spark4-cuda
+build-spark4-cuda:
+	docker build --platform="$(MLRUN_CE_IMAGE_PLATFORM)" -t "$(MLRUN_CE_SPARK4_CUDA_IMAGE_TAG)" -f Dockerfile.spark4.cuda .
+
+.PHONY: build-spark4-all
+build-spark4-all: build-spark4 build-spark4-cuda
+
+.PHONY: validate-spark4
+validate-spark4:
+	bash scripts/validate-spark4.sh "$(MLRUN_CE_SPARK4_IMAGE_TAG)"
+
+.PHONY: validate-spark4-cuda
+validate-spark4-cuda:
+	bash scripts/validate-spark4.sh "$(MLRUN_CE_SPARK4_CUDA_IMAGE_TAG)" --cuda
+
+.PHONY: validate-spark4-all
+validate-spark4-all: validate-spark4 validate-spark4-cuda
+
+.PHONY: jar-parity-spark4
+jar-parity-spark4:
+	bash scripts/jar-parity.sh "$(MLRUN_CE_SPARK4_IMAGE_TAG)" "$(MLRUN_CE_SPARK4_CUDA_IMAGE_TAG)"
