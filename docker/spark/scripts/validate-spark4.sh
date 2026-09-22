@@ -24,11 +24,23 @@ CUDA_MODE="${2:-}"
 
 PINNED_CUDA_VERSION="12.8.1"
 PINNED_CUDNN_VERSION="9.8.0.87-1"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JAR_MANIFEST="$SCRIPT_DIR/jars-4.2.0.txt"
 
-EXPECTED_JARS=(
+EXPECTED_BASE_JARS=(
   hadoop-client-api-3.5.0.jar
   hadoop-client-runtime-3.5.0.jar
 )
+
+[[ -f "$JAR_MANIFEST" ]] || { echo "missing JAR manifest: $JAR_MANIFEST" >&2; exit 1; }
+EXPECTED_CONNECTOR_JARS=()
+while read -r line || [ -n "$line" ]; do
+  url="${line%%#*}"
+  url="$(echo "$url" | tr -d '[:space:]')"
+  [ -z "$url" ] && continue
+  EXPECTED_CONNECTOR_JARS+=("$(basename "$url")")
+done < "$JAR_MANIFEST"
+[[ ${#EXPECTED_CONNECTOR_JARS[@]} -gt 0 ]] || { echo "no connector JARs listed in $JAR_MANIFEST" >&2; exit 1; }
 
 run() {
   docker run --rm --platform linux/amd64 --entrypoint bash "$IMAGE" -c "$1"
@@ -58,8 +70,27 @@ java_version="$(run 'java -version 2>&1')"
 grep -Fq 'Temurin-25.0.4+7' <<<"$java_version" || { echo "FAIL: Java is not Temurin 25.0.4+7:"; echo "$java_version"; exit 1; }
 
 echo "==> [$IMAGE] Hadoop 3.5.0"
-for jar in "${EXPECTED_JARS[@]}"; do
+for jar in "${EXPECTED_BASE_JARS[@]}"; do
   run "test -f \$SPARK_HOME/jars/$jar" || { echo "FAIL: missing jar $jar"; exit 1; }
+done
+
+echo "==> [$IMAGE] ${#EXPECTED_CONNECTOR_JARS[@]} connector JARs"
+for jar in "${EXPECTED_CONNECTOR_JARS[@]}"; do
+  run "test -f \$SPARK_HOME/jars/$jar" || { echo "FAIL: missing connector jar $jar"; exit 1; }
+done
+
+echo "==> [$IMAGE] no duplicate connector versions"
+CONNECTOR_JAR_PREFIXES='^(hadoop-aws|hadoop-azure|hadoop-common|hadoop-gcp|aws-java-sdk-bundle|bundle|analyticsaccelerator-s3|wildfly-openssl|azure-storage|gcs-connector|jetty-util|jetty-util-ajax|spark-bigquery-with-dependencies)-'
+duplicates="$(run 'ls "$SPARK_HOME/jars"' | grep -E "$CONNECTOR_JAR_PREFIXES" | sed -E 's/-[0-9][A-Za-z0-9._-]*\.jar$//' | sort | uniq -d)"
+[[ -z "$duplicates" ]] || { echo "FAIL: duplicate connector artifacts:"; echo "$duplicates"; exit 1; }
+
+echo "==> [$IMAGE] connector classes resolve"
+for class in \
+  org.apache.hadoop.fs.s3a.S3AFileSystem \
+  org.apache.hadoop.fs.azurebfs.oauth2.WorkloadIdentityTokenProvider \
+  org.apache.hadoop.fs.gs.GoogleHadoopFileSystem; do
+  run "javap -classpath \"\$SPARK_HOME/jars/*\" '$class' >/dev/null" \
+    || { echo "FAIL: connector class does not resolve: $class"; exit 1; }
 done
 
 echo "==> [$IMAGE] Python 3.11"

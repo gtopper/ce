@@ -77,7 +77,10 @@ WORKDIR /opt/spark/work-dir
 
 # Shared with the regular Spark 4 image.
 COPY scripts/ce-customize-spark4.sh /tmp/ce-customize-spark4.sh
-RUN chmod +x /tmp/ce-customize-spark4.sh && /tmp/ce-customize-spark4.sh && rm -f /tmp/ce-customize-spark4.sh
+COPY scripts/jars-4.2.0.txt /tmp/jars-4.2.0.txt
+RUN chmod +x /tmp/ce-customize-spark4.sh && \
+    /tmp/ce-customize-spark4.sh /tmp/jars-4.2.0.txt && \
+    rm -f /tmp/ce-customize-spark4.sh /tmp/jars-4.2.0.txt
 
 USER spark
 

@@ -61,10 +61,27 @@ Hadoop 3.5.0, Temurin 25.0.4+7, and Python 3.11:
   that base into the digest-pinned `SPARK4_CUDA_BASE_IMAGE` (CUDA 12.8.1,
   cuDNN 9.8.0.87-1).
 
-These images do not include S3A, ABFS, GCS, or BigQuery connectors. They
-therefore cannot access SeaweedFS through S3A. Connector support requires a
-new immutable image revision, such as
-`4.2.0-scala2.13-java25-ubuntu-2`.
+Both images install the connector artifacts listed in
+`scripts/jars-4.2.0.txt`: Hadoop 3.5.0 connectors for S3A, ABFS, and GCS,
+their required AWS and Azure dependencies, and the Scala 2.13 BigQuery
+connector. These restore the connector family shipped by the published Spark
+3 image so Spark 4 can serve as a like-for-like platform image. Local
+validation checks packaging, class resolution, duplicate versions, and
+CPU/CUDA parity. Authenticated provider testing and BigQuery compatibility
+with Spark 4.2 are deferred to the corresponding activation work.
+
+`hadoop-gcp-3.5.0` provides
+`org.apache.hadoop.fs.gs.GoogleHadoopFileSystem`, replacing the former
+`com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem` class. It does not
+provide a replacement `AbstractFileSystem` implementation. Consumers using
+the old `fs.gs.impl` or `fs.AbstractFileSystem.gs.impl` configuration must
+update or remove it.
+
+`hadoop-aws-3.5.0` uses AWS SDK v2. Hadoop remaps several common SDK v1
+credential-provider names, but not
+`com.amazonaws.auth.DefaultAWSCredentialsProviderChain`, arbitrary
+`com.amazonaws.*` providers, or custom SDK v1 implementations. Consumers
+using those providers must migrate their configuration.
 
 MLRun selects the CPU repository and tag through `MLRUN_SPARK_APP_IMAGE` and
 `MLRUN_SPARK_APP_IMAGE_TAG`, and derives the CUDA repository by appending
@@ -90,9 +107,10 @@ for both pinned base-image digests.
 make validate-spark4-all
 ```
 
-The validators check Spark, Scala, Java, Hadoop, Python, image metadata, and
-CUDA metadata. The aggregate target also checks CPU/CUDA environment parity
-and compares every `$SPARK_HOME/jars` entry by SHA-256.
+The validators check Spark, Scala, Java, Hadoop, Python, the connector
+inventory, image metadata, and CUDA metadata. The aggregate target also checks
+CPU/CUDA environment parity and compares every `$SPARK_HOME/jars` entry by
+SHA-256. It does not authenticate to AWS, Azure, or GCP services.
 
 ### Publish (manual, JFrog)
 
@@ -130,4 +148,5 @@ Attach to ML-13080:
 - CPU and CUDA JAR SHA-256 inventories and the parity result;
 - the pinned base-image references from the Makefile;
 - the source commit;
-- the connector limitations documented above.
+- the connector inventory and deferred provider-validation status documented
+  above.
