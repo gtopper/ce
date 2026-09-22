@@ -18,6 +18,7 @@
 # regular Spark 4 image is built from, so the two variants cannot drift and
 # the build does not download Spark or the JDK a second time.
 
+# Required build arguments; the Makefile supplies the pinned base references.
 ARG SPARK4_BASE_IMAGE
 ARG SPARK4_CUDA_BASE_IMAGE
 

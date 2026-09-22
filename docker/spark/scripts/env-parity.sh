@@ -61,6 +61,10 @@ while IFS= read -r line; do
         echo "FAIL: CUDA image is missing $key"
         exit 1
       }
+      [[ ":$cuda_value:" == *":/usr/local/cuda/bin:"* ]] || {
+        echo "FAIL: CUDA PATH is missing /usr/local/cuda/bin"
+        exit 1
+      }
       normalized_cuda_path="${cuda_value/:\/usr\/local\/cuda\/bin/}"
       [[ "$normalized_cuda_path" == "$cpu_value" ]] || {
         echo "FAIL: PATH differs beyond the expected CUDA addition"

@@ -68,8 +68,10 @@ new immutable image revision, such as
 
 MLRun selects the CPU repository and tag through `MLRUN_SPARK_APP_IMAGE` and
 `MLRUN_SPARK_APP_IMAGE_TAG`, and derives the CUDA repository by appending
-`-cuda`. mlefi recognizes that resulting `spark-app` / `spark-app-cuda` pair
-using `^(.+?)-scala.*$`. These recipes do not change the configured defaults.
+`-cuda`. mlefi resolves both repositories and extracts the Spark version from
+the tag with `^(.+?)-scala.*$`; for example,
+`4.2.0-scala2.13-java25-ubuntu-1` yields `4.2.0`. These recipes do not change
+the configured defaults.
 
 ### Build
 
@@ -126,5 +128,6 @@ Attach to ML-13080:
 - pull-by-digest and image-inspection output;
 - `spark-submit --version` and `java -version` output;
 - CPU and CUDA JAR SHA-256 inventories and the parity result;
+- the pinned base-image references from the Makefile;
 - the source commit;
 - the connector limitations documented above.

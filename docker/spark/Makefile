@@ -30,6 +30,8 @@ validate-all: validate validate-cuda
 
 # Spark 4 variables and targets.
 REGISTRY ?= gcr.io/iguazio
+# Spark uses a multi-platform index; CUDA uses its linux/amd64 child manifest
+# because the Spark 4 image pair is intentionally amd64-only.
 SPARK4_BASE_IMAGE ?= spark@sha256:66e39dccde81909c23e5c56f4b465db6de2bdc38cf569aacc9e2380ee5005440
 SPARK4_CUDA_BASE_IMAGE ?= nvidia/cuda@sha256:61f6c08f2b59036cb935e56d1e31a6b64e3ae2c7ddb86d33fa0b044c7917b719
 MLRUN_CE_SPARK4_IMAGE_TAG ?= $(REGISTRY)/spark-app:4.2.0-scala2.13-java25-ubuntu-1

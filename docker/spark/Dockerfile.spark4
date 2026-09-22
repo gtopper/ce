@@ -17,6 +17,7 @@
 # Spark 4.2.0, Scala 2.13, Temurin JDK 25, Hadoop 3.5.0 as bundled by the
 # pinned upstream image.
 
+# Required build argument; the Makefile supplies the pinned base reference.
 ARG SPARK4_BASE_IMAGE
 FROM ${SPARK4_BASE_IMAGE}
 
