@@ -31,7 +31,7 @@ EXPECTED_JARS=(
 )
 
 run() {
-  docker run --rm --platform "${MLRUN_CE_IMAGE_PLATFORM:-linux/amd64}" --entrypoint bash "$IMAGE" -c "$1"
+  docker run --rm --platform linux/amd64 --entrypoint bash "$IMAGE" -c "$1"
 }
 
 echo "==> [$IMAGE] linux/amd64 architecture"

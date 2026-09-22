@@ -52,25 +52,24 @@ the CE source commit.
 
 ## Spark 4
 
-The Spark 4 images use Spark 4.2.0, Scala 2.13, Hadoop 3.5.0, Temurin
-25.0.4+7, and Python 3.11:
+The Spark 4 images target `linux/amd64` and use Spark 4.2.0, Scala 2.13,
+Hadoop 3.5.0, Temurin 25.0.4+7, and Python 3.11:
 
-- `spark-app:4.2.0-scala2.13-java25-ubuntu-1` uses
-  `spark@sha256:66e39dccde81909c23e5c56f4b465db6de2bdc38cf569aacc9e2380ee5005440`.
+- `spark-app:4.2.0-scala2.13-java25-ubuntu-1` uses the digest-pinned Spark
+  base configured by `SPARK4_BASE_IMAGE` in the Makefile.
 - `spark-app-cuda:4.2.0-scala2.13-java25-ubuntu-1` copies Spark and Java from
-  that image into
-  `nvidia/cuda@sha256:61f6c08f2b59036cb935e56d1e31a6b64e3ae2c7ddb86d33fa0b044c7917b719`
-  (CUDA 12.8.1, cuDNN 9.8.0.87-1).
+  that base into the digest-pinned `SPARK4_CUDA_BASE_IMAGE` (CUDA 12.8.1,
+  cuDNN 9.8.0.87-1).
 
 These images do not include S3A, ABFS, GCS, or BigQuery connectors. They
 therefore cannot access SeaweedFS through S3A. Connector support requires a
 new immutable image revision, such as
 `4.2.0-scala2.13-java25-ubuntu-2`.
 
-MLRun selects the repository and tag through `MLRUN_SPARK_APP_IMAGE` and
-`MLRUN_SPARK_APP_IMAGE_TAG`. mlefi resolves the `spark-app` /
-`spark-app-cuda` pair using `^(.+?)-scala.*$`. These recipes do not change
-the configured defaults.
+MLRun selects the CPU repository and tag through `MLRUN_SPARK_APP_IMAGE` and
+`MLRUN_SPARK_APP_IMAGE_TAG`, and derives the CUDA repository by appending
+`-cuda`. mlefi recognizes that resulting `spark-app` / `spark-app-cuda` pair
+using `^(.+?)-scala.*$`. These recipes do not change the configured defaults.
 
 ### Build
 
@@ -80,19 +79,18 @@ make build-spark4-cuda
 make build-spark4-all
 ```
 
-`REGISTRY` defaults to `gcr.io/iguazio`. Override it or either image-tag
-variable as needed.
+`REGISTRY` defaults to `gcr.io/iguazio`. The Makefile is the source of truth
+for both pinned base-image digests.
 
 ### Validate
 
 ```bash
 make validate-spark4-all
-make jar-parity-spark4
 ```
 
 The validators check Spark, Scala, Java, Hadoop, Python, image metadata, and
-CUDA metadata. The parity check compares every `$SPARK_HOME/jars` entry by
-SHA-256.
+CUDA metadata. The aggregate target also checks CPU/CUDA environment parity
+and compares every `$SPARK_HOME/jars` entry by SHA-256.
 
 ### Publish (manual, JFrog)
 
@@ -105,7 +103,6 @@ immutable tag.
 ```bash
 make REGISTRY=mckinsey-ig4-next-gen-docker-local.jfrog.io build-spark4-all
 make REGISTRY=mckinsey-ig4-next-gen-docker-local.jfrog.io validate-spark4-all
-make REGISTRY=mckinsey-ig4-next-gen-docker-local.jfrog.io jar-parity-spark4
 
 docker login mckinsey-ig4-next-gen-docker-local.jfrog.io
 docker push mckinsey-ig4-next-gen-docker-local.jfrog.io/spark-app:4.2.0-scala2.13-java25-ubuntu-1

@@ -25,7 +25,7 @@ IMAGE_B="${2:?usage: jar-parity.sh <image-a> <image-b>}"
 checksums() {
   # LC_ALL=C: the two images may differ in locale, and collation order would
   # otherwise diff even when the contents match.
-  docker run --rm --platform "${MLRUN_CE_IMAGE_PLATFORM:-linux/amd64}" \
+  docker run --rm --platform linux/amd64 \
     --entrypoint bash "$1" -c \
     'cd "$SPARK_HOME/jars" && LC_ALL=C sha256sum *.jar | LC_ALL=C sort'
 }
