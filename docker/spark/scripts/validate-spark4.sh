@@ -80,8 +80,8 @@ for jar in "${EXPECTED_CONNECTOR_JARS[@]}"; do
 done
 
 echo "==> [$IMAGE] no duplicate connector versions"
-CONNECTOR_JAR_PREFIXES='^(hadoop-aws|hadoop-azure|hadoop-common|hadoop-gcp|aws-java-sdk-bundle|bundle|analyticsaccelerator-s3|wildfly-openssl|azure-storage|gcs-connector|jetty-util|jetty-util-ajax|spark-bigquery-with-dependencies)-'
-duplicates="$(run 'ls "$SPARK_HOME/jars"' | grep -E "$CONNECTOR_JAR_PREFIXES" | sed -E 's/-[0-9][A-Za-z0-9._-]*\.jar$//' | sort | uniq -d)"
+CONNECTOR_JAR_PREFIXES='^(hadoop-aws|hadoop-azure|hadoop-common|hadoop-gcp|aws-java-sdk-bundle|bundle|analyticsaccelerator-s3|wildfly-openssl|azure-storage|gcs-connector|jetty-util|jetty-util-ajax|spark-bigquery-with-dependencies(_[0-9]+\.[0-9]+)?)-'
+duplicates="$(run 'ls "$SPARK_HOME/jars"' | grep -E "$CONNECTOR_JAR_PREFIXES" | sed -E 's/(_[0-9]+\.[0-9]+)?-[0-9][A-Za-z0-9._-]*\.jar$//' | sort | uniq -d)"
 [[ -z "$duplicates" ]] || { echo "FAIL: duplicate connector artifacts:"; echo "$duplicates"; exit 1; }
 
 echo "==> [$IMAGE] connector classes resolve"
